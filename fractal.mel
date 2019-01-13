@@ -1,0 +1,98 @@
+// UI global variables
+global string $sizeSlider;
+global string $densitySlider;
+global string $angleSlider;
+
+global float $size ;
+global float $constant ;
+global vector $pos ;
+global int $angle ;
+
+// Initialize variables
+global float $size = 10.0;
+global float $constant = 3.5;
+global vector $pos = <<0, 0, 0>>;
+global int $angle = 45;
+
+global proc SnowUI(){
+    global string $sizeSlider;
+    global string $densitySlider; 
+    global string $angleSlider;
+    
+viewSet -f;
+if ( `window -exists MyWindow` ) {
+    deleteUI MyWindow; // delete window when it exists
+}
+
+window -t "Snowflake Generator" -w 250 -h 300 MyWindow;
+ 
+columnLayout -adjustableColumn true;
+  //  floatSlider -min 1.0 -max 6.0 -value 0 -step .5;
+    text " ";
+	$sizeSlider = `floatSliderGrp -columnWidth 1 100
+							  -label "Size"
+							  -field true
+							  -value 10.0
+							  -min 8.0
+							  -max 12.0`;    
+							  
+	$densitySlider = `floatSliderGrp -columnWidth 1 100
+							  -label "Density Constant"
+							  -field true
+							  -value 3.5
+							  -min 2.0
+							  -max 5.0`;    
+							  
+	$angleSlider = `intSliderGrp -columnWidth 1 100
+							  -label "Angle"
+							  -field true
+							  -value 45
+							  -min 30
+							  -max 72`;    
+	button -label " Generate Snowflake" -command "Generate";
+	button -label " Delete Snowflake" -command "Delete";
+							 
+showWindow MyWindow;
+
+}
+SnowUI();
+
+global proc Generate(){
+    global string $sizeSlider;
+    global string $densitySlider; 
+    global string $angleSlider;
+    
+	float $size = `floatSliderGrp -q -value $sizeSlider`;
+    float $constant = `floatSliderGrp -q -value $densitySlider`;
+    int $angle = `intSliderGrp -q -value $angleSlider`;
+    vector $pos = <<0, 0, 0>>;
+    
+    // Create the snowflake
+    snowflake($size, $constant, $angle, $pos);
+}
+
+global proc Delete(){
+    file -f -new;
+    viewSet -f;
+}
+
+
+// SNOWFLAKE GENERATION BACKEND
+global proc snowflake (float $size, float $constant, int $angle, vector $pos) {
+    viewSet -f;
+    // Base case
+    if($size < .5){
+        return;
+    }
+    
+    for($theta = 0; $theta < 360; $theta += $angle){
+        polyCube -d .1 -w .1 -h $size;                // create polycube of height $size
+        rotate -r -os -fo 0 0 $theta;                 // move and rotate to correct position
+        move -r ($pos.x) ($pos.y) ($pos.z);
+
+        vector $next = <<($pos.x + ($size/$constant)*cos(deg_to_rad($theta))), ($pos.y + ($size/$constant)*sin(deg_to_rad($theta))), $pos.z>>;
+        snowflake($size/$constant, $constant, $angle, $next);
+     }
+  
+}
+
