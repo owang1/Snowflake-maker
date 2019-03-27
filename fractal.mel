@@ -27,7 +27,6 @@ if ( `window -exists MyWindow` ) {
 window -t "Snowflake Generator" -w 250 -h 300 MyWindow;
  
 columnLayout -adjustableColumn true;
-  //  floatSlider -min 1.0 -max 6.0 -value 0 -step .5;
     text " ";
 	$sizeSlider = `floatSliderGrp -columnWidth 1 100
 							  -label "Size"
@@ -62,12 +61,12 @@ global proc Generate(){
     global string $densitySlider; 
     global string $angleSlider;
     
-	float $size = `floatSliderGrp -q -value $sizeSlider`;
+    float $size = `floatSliderGrp -q -value $sizeSlider`;
     float $constant = `floatSliderGrp -q -value $densitySlider`;
     int $angle = `intSliderGrp -q -value $angleSlider`;
     vector $pos = <<0, 0, 0>>;
     
-    // Create the snowflake
+    // Create snowflake
     snowflake($size, $constant, $angle, $pos);
 }
 
@@ -80,6 +79,7 @@ global proc Delete(){
 // SNOWFLAKE GENERATION BACKEND
 global proc snowflake (float $size, float $constant, int $angle, vector $pos) {
     viewSet -f;
+    
     // Base case
     if($size < .5){
         return;
