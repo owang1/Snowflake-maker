@@ -3,17 +3,13 @@ global string $sizeSlider;
 global string $densitySlider;
 global string $angleSlider;
 
-global float $size ;
-global float $constant ;
-global vector $pos ;
-global int $angle ;
-
-// Initialize variables
+// Initialize other variables
 global float $size = 10.0;
 global float $constant = 3.5;
 global vector $pos = <<0, 0, 0>>;
 global int $angle = 45;
 
+// Main function
 global proc SnowUI(){
     global string $sizeSlider;
     global string $densitySlider; 
@@ -26,36 +22,46 @@ if ( `window -exists MyWindow` ) {
 
 window -t "Snowflake Generator" -w 250 -h 300 MyWindow;
  
+// Basic layout that places each control in single column 
 columnLayout -adjustableColumn true;
+
+    // Insert blank text row for spacing
     text " ";
-	$sizeSlider = `floatSliderGrp -columnWidth 1 100
+
+    // Size slider corresponds to height of 1st polycube    
+    $sizeSlider = `floatSliderGrp -columnWidth 1 100
 							  -label "Size"
 							  -field true
 							  -value 10.0
 							  -min 8.0
 							  -max 12.0`;    
 							  
-	$densitySlider = `floatSliderGrp -columnWidth 1 100
+    // Higher density -> less complex snowflake
+    $densitySlider = `floatSliderGrp -columnWidth 1 100
 							  -label "Density Constant"
 							  -field true
 							  -value 3.5
 							  -min 2.0
 							  -max 5.0`;    
 							  
-	$angleSlider = `intSliderGrp -columnWidth 1 100
+    // Angle between each polycube branc
+    $angleSlider = `intSliderGrp -columnWidth 1 100
 							  -label "Angle"
 							  -field true
 							  -value 45
 							  -min 30
-							  -max 72`;    
-	button -label " Generate Snowflake" -command "Generate";
-	button -label " Delete Snowflake" -command "Delete";
+							  -max 72`; 
+							  
+    // Buttons for generating & deleting snowflakes   
+    button -label " Generate Snowflake" -command "Generate";
+    button -label " Delete Snowflake" -command "Delete";
 							 
 showWindow MyWindow;
 
 }
 SnowUI();
 
+// Generate() is called when "Generate Snowflake" button is pressed
 global proc Generate(){
     global string $sizeSlider;
     global string $densitySlider; 
@@ -66,7 +72,7 @@ global proc Generate(){
     int $angle = `intSliderGrp -q -value $angleSlider`;
     vector $pos = <<0, 0, 0>>;
     
-    // Create snowflake
+    // Create the snowflake
     snowflake($size, $constant, $angle, $pos);
 }
 
@@ -76,7 +82,7 @@ global proc Delete(){
 }
 
 
-// SNOWFLAKE GENERATION BACKEND
+// Recursive Snowflake Generation
 global proc snowflake (float $size, float $constant, int $angle, vector $pos) {
     viewSet -f;
     
@@ -90,9 +96,8 @@ global proc snowflake (float $size, float $constant, int $angle, vector $pos) {
         rotate -r -os -fo 0 0 $theta;                 // move and rotate to correct position
         move -r ($pos.x) ($pos.y) ($pos.z);
 
+        // Divide $size by $constant each time
         vector $next = <<($pos.x + ($size/$constant)*cos(deg_to_rad($theta))), ($pos.y + ($size/$constant)*sin(deg_to_rad($theta))), $pos.z>>;
         snowflake($size/$constant, $constant, $angle, $next);
-     }
-  
+     } 
 }
-
