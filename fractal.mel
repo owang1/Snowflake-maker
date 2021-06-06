@@ -2,18 +2,31 @@
 global string $sizeSlider;
 global string $densitySlider;
 global string $angleSlider;
+global string $positionField;
+global string $directionField;
+global string $myCheckBox;  
+global string $colorPicker;
 
 // Initialize other variables
 global float $size = 10.0;
 global float $constant = 3.5;
 global vector $pos = <<0, 0, 0>>;
+global vector $direction = <<0, 0, 0>>;
+global vector $color = <<0, 0, 0>>;
 global int $angle = 45;
+global string $chkbxState = "not checked";
 
 // Main function
 global proc SnowUI(){
     global string $sizeSlider;
     global string $densitySlider; 
     global string $angleSlider;
+    global string $positionField;
+    global string $directionField;
+    global string $myCheckBox; 
+    global string $colorPicker; 
+;
+
     
 viewSet -f;
 if ( `window -exists MyWindow` ) {
@@ -28,6 +41,15 @@ columnLayout -adjustableColumn true;
     // Insert blank text row for spacing
     text " ";
 
+	// Position of Snowflake
+	$positionField = `intFieldGrp -numberOfFields 3 -columnWidth 1 100
+							  -label "Position"
+							  -value1 0 -value2 0 -value3 0`;
+	// Position of Snowflake
+	$directionField = `intFieldGrp -numberOfFields 3 -columnWidth 1 100
+							  -label "Direction"
+							  -value1 0 -value2 0 -value3 0`;
+							  
     // Size slider corresponds to height of 1st polycube    
     $sizeSlider = `floatSliderGrp -columnWidth 1 100
 							  -label "Size"
@@ -51,7 +73,16 @@ columnLayout -adjustableColumn true;
 							  -value 45
 							  -min 30
 							  -max 72`; 
-							  
+   $colorPicker = `colorSliderGrp -label "Color" -rgb 1 1 1  -columnWidth 1 100`;
+					  							  
+	$myCheckBox = `checkBox -label "Randomized edge lengths"
+	      -onCommand "$chkbxState = \"checked\""
+          -offCommand "$chkbxState = \"not checked\""`;  
+      
+	$bevelCheckBox = `checkBox -label "Bevel"
+	      -onCommand "$chkbxState = \"checked\""
+          -offCommand "$chkbxState = \"not checked\""`;  
+                    					  
     // Buttons for generating & deleting snowflakes   
     button -label " Generate Snowflake" -command "Generate";
     button -label " Delete Snowflake" -command "Delete";
@@ -66,14 +97,33 @@ global proc Generate(){
     global string $sizeSlider;
     global string $densitySlider; 
     global string $angleSlider;
-    
+    global string $positionField;
+    global string $directionField;
+    global string $myCheckBox;
+    global string $colorPicker;
+    string $allPolycubes[];
+
     float $size = `floatSliderGrp -q -value $sizeSlider`;
     float $constant = `floatSliderGrp -q -value $densitySlider`;
     int $angle = `intSliderGrp -q -value $angleSlider`;
-    vector $pos = <<0, 0, 0>>;
+    vector $pos = `intFieldGrp -q -value $positionField`;
+    vector $color = `colorSliderGrp -q -rgbValue $colorPicker`;
+    vector $direction = `intFieldGrp -q -value $directionField`;
+    string $chkbxState = `checkBox -q -value $myCheckBox`;
+
+    //group -em -name polycubes;
     
     // Create the snowflake
-    snowflake($size, $constant, $angle, $pos);
+    snowflake($size, $constant, $angle, $pos, $direction, $color, $chkbxState);
+    
+    // Rotate the snowflake
+    //rotate -xyz ($direction.x) ($direction.y) ($direction.z) polycubes;
+    
+    $allPolycubes = `ls -type polyCube`;
+    select -all;
+    group -n mySnowflake;
+    rotate -pivot ($pos.x) ($pos.y) ($pos.z) -xyz ($direction.x) ($direction.y) ($direction.z) mySnowflake;
+
 }
 
 global proc Delete(){
@@ -83,21 +133,29 @@ global proc Delete(){
 
 
 // Recursive Snowflake Generation
-global proc snowflake (float $size, float $constant, int $angle, vector $pos) {
+global proc snowflake (float $size, float $constant, int $angle, vector $pos, vector $direction, vector $color, string $chkbxState) {
     viewSet -f;
+    
+    //print $chkbxState;
+
     
     // Base case
     if($size < .5){
         return;
     }
     
+    
     for($theta = 0; $theta < 360; $theta += $angle){
-        polyCube -d .1 -w .1 -h $size;                // create polycube of height $size
+        polyCube -n myCube -d .1 -w .1 -h $size;                // create polycube of height $size
+        setAttr "lambert1.color" -type double3 ($color.r) ($color.g) ($color.b) ;
         rotate -r -os -fo 0 0 $theta;                 // move and rotate to correct position
         move -r ($pos.x) ($pos.y) ($pos.z);
 
+        //float $randomEdge = rand(.8, 1.2);
+        //print($randomEdge);
+        
         // Divide $size by $constant each time
         vector $next = <<($pos.x + ($size/$constant)*cos(deg_to_rad($theta))), ($pos.y + ($size/$constant)*sin(deg_to_rad($theta))), $pos.z>>;
-        snowflake($size/$constant, $constant, $angle, $next);
+        snowflake($size/$constant, $constant, $angle, $next, $direction, $color, $chkbxState);
      } 
 }
