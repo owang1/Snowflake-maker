@@ -4,4 +4,4 @@ Recursive snowflake/fractal generation script + GUI written in MEL scripting lan
 Has two snowflake algorithms currently, a simple version branching version relying on inputted angles and Koch's snowflake algorithm, relying on number of iterations.
 
 ## Demo
-Demo video can be found at https://oliviaswang.weebly.com/snowflake-generator](https://oliviaswang.weebly.com/snowflake-generator)
+Demo video can be found at [https://oliviaswang.weebly.com/snowflake-generator](https://oliviaswang.weebly.com/snowflake-generator)
