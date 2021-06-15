@@ -37,14 +37,14 @@ global proc SnowUI(){
     global string $rk;
 ;
 
-    
+
 viewSet -f;
 if ( `window -exists MyWindow` ) {
     deleteUI MyWindow; // delete window when it exists
 }
 
 window -t "Snowflake Generator" -w 250 -h 300 MyWindow;
- 
+
 // Basic layout that places each control in single column 
 columnLayout -adjustableColumn true;
 
@@ -94,14 +94,6 @@ columnLayout -adjustableColumn true;
 							  -max 7`; 
 							  
     $colorPicker = `colorSliderGrp -label "Color" -rgb 1 1 1  -columnWidth 1 100`;
-					  							  
-	$myCheckBox = `checkBox -label "Randomized edge lengths"
-	      -onCommand "$chkbxState = \"checked\""
-          -offCommand "$chkbxState = \"not checked\""`;  
-      
-	$bevelCheckBox = `checkBox -label "Bevel"
-	      -onCommand "$chkbxState = \"checked\""
-          -offCommand "$chkbxState = \"not checked\""`;  
 
     // Radio buttons to determine type to snowflake\
     text -label "Snowflake Type";
@@ -109,6 +101,7 @@ columnLayout -adjustableColumn true;
     $snowRadio = `radioCollection`;
     $rs = `radioButton -label "Simple" -onCommand "$snowflakeType = \"simple\""`;
     $rk = `radioButton -label "Koch" -onCommand "$snowflakeType = \"koch\""`; 
+    
     // Select simple snowflake by default
     radioCollection -edit -select $rs $snowRadio; 
            					  
@@ -129,7 +122,6 @@ global proc Generate(){
     global string $iterationsSlider;
     global string $positionField;
     global string $directionField;
-    global string $myCheckBox;
     global string $colorPicker;
     global string $snowRadio;
     global string $rs;
@@ -143,19 +135,17 @@ global proc Generate(){
     vector $pos = `intFieldGrp -q -value $positionField`;
     vector $color = `colorSliderGrp -q -rgbValue $colorPicker`;
     vector $direction = `intFieldGrp -q -value $directionField`;
-    string $chkbxState = `checkBox -q -value $myCheckBox`;
     string $selected =  `radioCollection -q -select $snowRadio`;
     string $snowflakeType = `radioButton -q -label $selected`;
     print $snowflakeType;
     
     int $koch_angle = -30;
     int $curr_angle = 0;
-    //vector $pos = <<0, 0, 0>>;
     
     if($snowflakeType == "Koch"){
         snowflake_koch($size, $iterations, $koch_angle, $curr_angle, $pos, $color);
     }else if($snowflakeType == "Simple"){
-        snowflake($size, $constant, $angle, $pos, $direction, $color, $chkbxState);
+        snowflake($size, $constant, $angle, $pos, $direction, $color);
     }    
     // Rotate the snowflake
     $allPolycubes = `ls -type polyCube`;
@@ -172,7 +162,7 @@ global proc Delete(){
 
 
 // Simple recursive snowflake generation
-global proc snowflake (float $size, float $constant, int $angle, vector $pos, vector $direction, vector $color, string $chkbxState) {
+global proc snowflake (float $size, float $constant, int $angle, vector $pos, vector $direction, vector $color) {
     viewSet -f;
     
     // Base case
@@ -189,7 +179,7 @@ global proc snowflake (float $size, float $constant, int $angle, vector $pos, ve
         
         // Divide $size by $constant each time
         vector $next = <<($pos.x + ($size/$constant)*cos(deg_to_rad($theta))), ($pos.y + ($size/$constant)*sin(deg_to_rad($theta))), $pos.z>>;
-        snowflake($size/$constant, $constant, $angle, $next, $direction, $color, $chkbxState);
+        snowflake($size/$constant, $constant, $angle, $next, $direction, $color);
      } 
 }
 
@@ -211,7 +201,6 @@ global proc snowflake_koch(float $size, int $iterations, int $koch_angle, int $c
 
     // pos
     move -r ($pos.x) ($pos.y) ($pos.z);
-    //pos -r ($pos.x) ($pos.y) 0;
 
     // Increment variables
     $iterations = $iterations - 1;
